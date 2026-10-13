@@ -7,12 +7,11 @@ import java.util.ArrayList;
 
 public class Main {
 
-    // Method to load cars from CSV file
     public static ArrayList<Car> loadCars(String filename) {
         ArrayList<Car> cars = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            String line = br.readLine(); // Skip header row
+            String line = br.readLine();
 
             while ((line = br.readLine()) != null) {
                 try {
@@ -42,13 +41,86 @@ public class Main {
         return cars;
     }
 
-    public static void main(String[] args) {
-        // Load all cars from CSV
-        ArrayList<Car> cars = loadCars("Car_Data.csv");
-        System.out.println("Total cars loaded: " + cars.size());
+    public static void selectionSortByMileage(ArrayList<Car> list) {
+        int n = list.size();
 
-        // Create working list with first 2,000 cars
+        for (int i = 0; i < n - 1; i++) {
+            int minIndex = i;
+
+            for (int j = i + 1; j < n; j++) {
+                if (list.get(j).getMileageKmpl() < list.get(minIndex).getMileageKmpl()) {
+                    minIndex = j;
+                }
+            }
+
+            if (minIndex != i) {
+                Car temp = list.get(i);
+                list.set(i, list.get(minIndex));
+                list.set(minIndex, temp);
+            }
+        }
+    }
+
+    public static ArrayList<Car> binarySearchByMileage(ArrayList<Car> list, double targetMileage) {
+        ArrayList<Car> results = new ArrayList<>();
+
+        int low = 0;
+        int high = list.size() - 1;
+        int foundIndex = -1;
+
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            double midMileage = list.get(mid).getMileageKmpl();
+
+            if (Math.abs(midMileage - targetMileage) < 0.01) {
+                foundIndex = mid;
+                break;
+            } else if (midMileage < targetMileage) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        if (foundIndex != -1) {
+            int i = foundIndex;
+            while (i >= 0 && Math.abs(list.get(i).getMileageKmpl() - targetMileage) < 0.01) {
+                results.add(0, list.get(i));
+                i--;
+            }
+
+            i = foundIndex + 1;
+            while (i < list.size() && Math.abs(list.get(i).getMileageKmpl() - targetMileage) < 0.01) {
+                results.add(list.get(i));
+                i++;
+            }
+        }
+
+        return results;
+    }
+
+    public static void main(String[] args) {
+        ArrayList<Car> cars = loadCars("Car_Data.csv");
         ArrayList<Car> working = new ArrayList<>(cars.subList(0, 2000));
-        System.out.println("Working list size: " + working.size());
+
+        selectionSortByMileage(working);
+        System.out.println("Sorted by mileage\n");
+
+        System.out.println("First 10 cars:");
+        for (int i = 0; i < 10; i++) {
+            System.out.println(working.get(i));
+        }
+
+        System.out.println("\nSearching for mileage: 18.97");
+        ArrayList<Car> results = binarySearchByMileage(working, 18.97);
+
+        if (results.isEmpty()) {
+            System.out.println("No cars found");
+        } else {
+            System.out.println("Found " + results.size() + " cars:");
+            for (Car car : results) {
+                System.out.println(car);
+            }
+        }
     }
 }
