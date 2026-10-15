@@ -7,50 +7,60 @@ import java.util.Scanner;
 
 public class Main {
 
+    // load cars from csv file
     public static ArrayList<Car> loadCars(String filename) {
         ArrayList<Car> cars = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            br.readLine();
+            br.readLine(); // skip header
             String line;
             while ((line = br.readLine()) != null) {
                 try {
                     String[] d = line.split(",");
+                    // make new car and add to list
                     cars.add(new Car(d[0].trim(), d[1].trim(), d[2].trim(), 
                             Integer.parseInt(d[3].trim()), d[4].trim(), 
                             d[5].trim(), Double.parseDouble(d[6].trim())));
-                } catch (Exception e) {}
+                } catch (Exception e) {} // skip bad rows
             }
         } catch (Exception e) {}
         return cars;
     }
 
+    // selection sort by mileage low to high
     public static void sortByMileage(ArrayList<Car> list) {
         for (int i = 0; i < list.size() - 1; i++) {
             int min = i;
+            // find smallest mileage
             for (int j = i + 1; j < list.size(); j++) {
                 if (list.get(j).getMileageKmpl() < list.get(min).getMileageKmpl()) {
                     min = j;
                 }
             }
+            // swap em
             Car temp = list.get(i);
             list.set(i, list.get(min));
             list.set(min, temp);
         }
     }
 
+    // binary search for mileage value
     public static ArrayList<Car> search(ArrayList<Car> list, double target) {
         ArrayList<Car> results = new ArrayList<>();
         int low = 0, high = list.size() - 1;
         
+        // find one match first
         while (low <= high) {
             int mid = (low + high) / 2;
             double m = list.get(mid).getMileageKmpl();
             
+            // close enough counts
             if (Math.abs(m - target) < 0.01) {
+                // go backwards to get all matches
                 int i = mid;
                 while (i >= 0 && Math.abs(list.get(i).getMileageKmpl() - target) < 0.01) {
                     results.add(0, list.get(i--));
                 }
+                // go forwards too
                 i = mid + 1;
                 while (i < list.size() && Math.abs(list.get(i).getMileageKmpl() - target) < 0.01) {
                     results.add(list.get(i++));
@@ -65,10 +75,12 @@ public class Main {
         return results;
     }
 
+    // calc stats for extra credit
     public static void stats(ArrayList<Car> list) {
         double total = 0;
         int petrol = 0, diesel = 0, electric = 0, hybrid = 0, cng = 0;
         
+        // count everything
         for (Car c : list) {
             total += c.getMileageKmpl();
             String f = c.getFuelType().toLowerCase();
@@ -79,6 +91,7 @@ public class Main {
             else if (f.equals("cng")) cng++;
         }
         
+        // print it out
         System.out.printf("\nAverage Mileage: %.2f km/l\n", total / list.size());
         System.out.println("Petrol: " + petrol);
         System.out.println("Diesel: " + diesel);
@@ -89,20 +102,25 @@ public class Main {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+        // load first 2000 cars into working list
         ArrayList<Car> working = new ArrayList<>(loadCars("Car_Data.csv").subList(0, 2000));
         boolean sorted = false;
 
+        // menu loop
         while (true) {
             System.out.println("\n1. Sort by Mileage\n2. Search by Mileage\n3. Statistics\n4. Exit");
             System.out.print("Choice: ");
             int choice = sc.nextInt();
 
+            // sort option
             if (choice == 1) {
                 sortByMileage(working);
                 sorted = true;
                 System.out.println("\nSorted. First 10:");
                 for (int i = 0; i < 10; i++) System.out.println(working.get(i));
-            } else if (choice == 2) {
+            } 
+            // search option
+            else if (choice == 2) {
                 if (!sorted) {
                     System.out.println("Sort first");
                 } else {
@@ -115,9 +133,13 @@ public class Main {
                         for (Car c : r) System.out.println(c);
                     }
                 }
-            } else if (choice == 3) {
+            } 
+            // stats option
+            else if (choice == 3) {
                 stats(working);
-            } else if (choice == 4) {
+            } 
+            // exit
+            else if (choice == 4) {
                 System.out.println("Exit");
                 break;
             }
